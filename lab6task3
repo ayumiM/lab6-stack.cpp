@@ -1,0 +1,172 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <sstream>
+
+using namespace std;
+
+template<class T1>
+class stack{
+private:
+    T1 *array;
+    //T1 *temp_array;
+    int stackSize;
+    int top;
+public:
+    stack(int s){
+        stackSize=s;
+        array= new T1[s];
+        top=-1;
+    }
+//    ~stack(){
+//        delete [] array;
+//    }
+    void stackSet(int s, int player){
+            if(player==1){
+                for(int i=0;i<s;i++){
+                    array[i]='a'+s-i-1;
+                    top++;
+                }
+            }
+            else if(player==2){
+                for(int i=0;i<s;i++){
+                    array[i]='A'+s-i-1;
+                    top++;
+                }
+            }
+    }
+    bool isFull(){
+        if(top==stackSize-1){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+    bool isEmpty(){
+        if(top==-1){
+            return true;
+        }
+        else
+            return false;
+    }
+    void push(T1 *num){
+        if (isFull()){
+            throw Full();
+        }
+        else{
+            top++;
+            array[top]=*num;
+        }
+    }
+    T1 *pop(){
+        if(isEmpty()){
+            throw Empty();
+        }
+        else{
+            T1 *a=new T1;
+            top--;
+            *a=array[top];
+            return a;
+        }
+    }
+    T1 *TOP(){
+        T1 *a=new T1;
+        *a=array[top];
+        return a;
+    }
+    int length(){
+        return top+1;
+    }
+    template<class T2>
+    friend void print(stack<T2> &);
+    class Full{};
+    class Empty{};
+};
+
+template<class T1>
+void print(stack<T1> & stack1){
+    for(int i=0; i<stack1.top+1;i++){
+        cout<<stack1.array[i];
+    }
+}
+
+int main()
+{
+    int disk, stop=0;
+    int from, to;
+    char *top;
+    int Score[5]={0,0,0,0,0};
+    cout<<"# of Disks?"; cin>>disk;
+    stack<char>s1(disk);
+    stack<char>s2(disk);
+    stack<char>s3(disk);
+    stack<char>s4(disk);
+    stack<char>s5(disk);
+    stack<char>towers[5]={s1,s2,s3,s4,s5};
+    towers[0].stackSet(disk, 1);
+    towers[4].stackSet(disk, 2);
+    while (true){
+        cout<<"Your Towers:\n";
+        for(int i=0;i<5;i++){
+            cout<<"Tower #"<<i+1<<": ";
+            print(towers[i]);
+            cout<<endl;
+        }
+        for(int i=0;i<5;i++){
+            if(Score[i]==disk&&i<2&&isupper(*towers[i].TOP())){
+                cout<<"Player 2 Win!\n";
+                stop++;
+                break;
+            }
+            else if (Score[i]==disk&&i>2&&islower(*towers[i].TOP())) {
+                cout<<"Player 1 Win!\n";
+                stop++;
+                break;
+            }
+        }
+        if(stop){break;}
+        while (true){
+            cout<<"\nMove From?  ";cin>>from;
+            top=towers[from-1].TOP();
+            try {
+                towers[from-1].pop();
+                if(Score[from-1]!=0){
+                    Score[from-1]--;
+                }
+                break;
+            } catch (stack<char>::Empty) {
+                cout<<"This tower is empty\n";
+            }
+        }
+        while (true) {
+            cout<<"To? ";cin>>to;
+            try {
+                if(towers[to-1].isEmpty()){
+                    towers[to-1].push(top);
+                    Score[to-1]++;
+                    break;
+                }
+                else if(toupper(*top)<=toupper(*towers[to-1].TOP())){          // if not empty, the upper disk must be smaller than the lower
+                    char *temp_top=towers[to-1].TOP();
+                    towers[to-1].push(top);
+                    //cout<<bottom<<" "<<towers[to-1].TOP();
+                    if(top+1==temp_top){
+                        //cout<<"hi";
+                        Score[to-1]++;
+                    }
+                    break;
+                }
+                else {
+                    cout<<"Invalid Move\n";
+                    continue;
+                }
+            } catch (stack<char>::Full) {
+                cout<<"This tower is full\n";
+            }
+        }
+
+    }
+
+    return 0;
+}
